@@ -68,17 +68,6 @@
 		CA5EAEB11E6011DE00B25492 /* GCDAsyncImage */ = {
 			isa = PBXGroup;
 			children = (
-				CA5EAEB41E6011DE00B25492 /* ViewController.swift */,
-				CA5EAEC41E60152400B25492 /* ImageTableViewCell.swift */,
-				CA5EAECA1E6025FE00B25492 /* Supporting Files */,
-				F9727F0320BC8B270015AC07 /* PhotoRecord.swift */,
-			);
-			path = GCDAsyncImage;
-			sourceTree = "<group>";
-		};
-		CA5EAECA1E6025FE00B25492 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
 				CA5EAEB21E6011DE00B25492 /* AppDelegate.swift */,
 				CA5EAEC81E6023DC00B25492 /* ViewController+Misc.swift */,
 				CA5EAEC61E60227E00B25492 /* Unsplash.swift */,
@@ -86,11 +75,38 @@
 				CA5EAEB91E6011DE00B25492 /* Assets.xcassets */,
 				CA5EAEBB1E6011DE00B25492 /* LaunchScreen.storyboard */,
 				CA5EAEBE1E6011DE00B25492 /* Info.plist */,
+				F9727F0D20BCAF5D0015AC07 /* UI */,
+				CA5EAECA1E6025FE00B25492 /* Supporting Files */,
+			);
+			path = GCDAsyncImage;
+			sourceTree = "<group>";
+		};
+		CA5EAECA1E6025FE00B25492 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				F9727F0C20BCAF1B0015AC07 /* Operation Helper */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		F9727F0C20BCAF1B0015AC07 /* Operation Helper */ = {
+			isa = PBXGroup;
+			children = (
 				F9727F0520BC8B600015AC07 /* PendingOperations.swift */,
+				F9727F0320BC8B270015AC07 /* PhotoRecord.swift */,
 				F9727F0820BC8BE90015AC07 /* ImageDownloader.swift */,
 				F9727F0A20BC8E3A0015AC07 /* ImageFilter.swift */,
 			);
-			name = "Supporting Files";
+			name = "Operation Helper";
+			sourceTree = "<group>";
+		};
+		F9727F0D20BCAF5D0015AC07 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				CA5EAEB41E6011DE00B25492 /* ViewController.swift */,
+				CA5EAEC41E60152400B25492 /* ImageTableViewCell.swift */,
+			);
+			name = UI;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

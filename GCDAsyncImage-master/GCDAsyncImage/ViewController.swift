@@ -19,6 +19,12 @@ class ViewController: UIViewController {
     // MARK: - VC Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+//         let url = imageURLArray[indexPath.row % imageURLArray.count]
+//        map all img urls to customized model
+        for url in imageURLArray {
+            let photoRecord = PhotoRecord(url: url)
+            self.photos.append(photoRecord)
+        }
         
     }
    
@@ -64,6 +70,7 @@ class ViewController: UIViewController {
         pendingOperations.filtrationQueue.addOperation(filter)
     }
     
+//    the main driver for download and filter tasks
     func startOperationsForPhotoRecord(photoRecord: PhotoRecord, indexPath: IndexPath) {
         switch(photoRecord.state){
         case .New:
@@ -74,6 +81,54 @@ class ViewController: UIViewController {
             NSLog("do nothing")
         }
     }
+    
+//    handle suspend and resume operations
+    func suspendAllOperations() {
+        pendingOperations.downloadQueue.isSuspended = true
+        pendingOperations.filtrationQueue.isSuspended = true
+    }
+    
+    func resumeAllOperations() {
+        pendingOperations.downloadQueue.isSuspended = false
+        pendingOperations.filtrationQueue.isSuspended = false
+    }
+    
+//    load img for cell
+    func loadImagesForOnscreenCell() {
+        if let pathsArr = tableView.indexPathsForVisibleRows {
+//            combine download & filter pending operation index together
+            var allPendingOperations = Set(pendingOperations.downloadsInProgress.keys)
+            allPendingOperations.union(pendingOperations.filtrationsInProgress.keys)
+            
+//            get all non-onscreen indexpath (to be cancel)
+            var toBeCancelled = allPendingOperations
+            let visiblePaths = Set(pathsArr)
+            toBeCancelled.subtract(visiblePaths)
+            
+//            get all indexpath of not yet started but visible cell
+            var toBeStarted = visiblePaths
+            toBeStarted.subtract(allPendingOperations)
+            
+            //  terminate all pending download & filter operation + remove them from pendingOperation
+            for indexPath in toBeCancelled {
+                if let pendingDownload = pendingOperations.downloadsInProgress[indexPath] {
+                    pendingDownload.cancel()
+                }
+                pendingOperations.downloadsInProgress.removeValue(forKey: indexPath)
+                
+                if let pendingFilter = pendingOperations.filtrationsInProgress[indexPath] {
+                    pendingFilter.cancel()
+                }
+                pendingOperations.filtrationsInProgress.removeValue(forKey: indexPath)
+            }
+            
+//            start operation
+            for indexPath in toBeStarted {
+                let photoRecord = self.photos[indexPath.row]
+                startOperationsForPhotoRecord(photoRecord: photoRecord, indexPath: indexPath)
+            }
+        }
+    }
 }
 
 // MARK: - UITableViewDataSource
@@ -82,28 +137,36 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         return numberOfCells
     }
     
-    func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ImageCell", for: indexPath) as! ImageTableViewCell
-//        self.operation.cancelAllOperations()
-//        cell.imageView?.image = nil
+    func scrollViewWillBeginDragging(scrollView: UIScrollView) {
+        //1
+        suspendAllOperations()
+    }
+    
+    func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        // 2
+        if !decelerate {
+//            loadImagesForOnscreenCells()
+            resumeAllOperations()
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ImageCell", for: indexPath) as! ImageTableViewCell
-        let url = imageURLArray[indexPath.row % imageURLArray.count]
         
+        let photoRecord = self.photos[indexPath.row]
+        
+        if (!tableView.isDragging && !tableView.isDecelerating) {
+            self.startOperationsForPhotoRecord(photoRecord: photoRecord, indexPath: indexPath)
+        }
+        
+//        let url = imageURLArray[indexPath.row % imageURLArray.count]
         if cell.accessoryView == nil {
             let indicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
             cell.accessoryView = indicator
         }
         
         let indicator = cell.accessoryView as! UIActivityIndicatorView
-//        append urls to photorecord
-        let photoRecord = PhotoRecord(url: url)
-        self.photos.append(photoRecord)
-        
         cell.imageView?.image = photoRecord.image
-        
         switch(photoRecord.state) {
         case .Filtered:
             indicator.stopAnimating()
